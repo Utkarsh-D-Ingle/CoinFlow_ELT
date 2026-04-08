@@ -1,0 +1,37 @@
+services:
+  # ---------------------------------------------------------
+  # DATABASE SERVICE
+  # ---------------------------------------------------------
+  postgres_db:
+    image: postgres:15-alpine
+    container_name: coinflow_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      # Persist data across container restarts
+      - pg_data:/var/lib/postgresql/data
+      # Automatically run the DB setup script on first boot
+      - ./sql/setup_db.sql:/docker-entrypoint-initdb.d/setup_db.sql
+
+  # ---------------------------------------------------------
+  # ELT PIPELINE SERVICE
+  # ---------------------------------------------------------
+  elt_pipeline:
+    build: .
+    container_name: coinflow_elt
+    depends_on:
+      - postgres_db
+    env_file:
+      - .env
+    volumes:
+      # Mount data and logs to the host machine for easy access
+      - ./data:/app/data
+      - ./logs:/app/logs
+
+volumes:
+  pg_data:

@@ -1,0 +1,12 @@
+# Data processing
+pandas==2.2.1
+numpy==1.26.4
+
+# API and Network
+requests==2.31.0
+
+# Database
+psycopg2-binary==2.9.9
+
+# Environment variables
+python-dotenv==1.0.1
