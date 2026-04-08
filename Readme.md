@@ -33,7 +33,7 @@ CoinFlow strictly follows an ELT pattern, transitioning data systematically thro
 * **Data Source:** [CoinGecko API (Demo Tier)](https://docs.coingecko.com/)
 
 ## 📂 Repository Structure
-
+```markdown
 Coinflow/
 ├── data/                               # Local storage for data processing
 │   ├── archive/                        # Backups of processed files (e.g., 21.json)
@@ -68,6 +68,7 @@ Coinflow/
 ├── dockerfile                          # Python environment image builder
 ├── entrypoint.sh                       # Startup and pipeline execution script
 └── requirements.txt                    # Python library dependencies
+```
 
 ## ⚙️ Getting Started
 ### Prerequisites
