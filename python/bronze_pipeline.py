@@ -41,8 +41,8 @@ class PipelineConfig:
         self.per_page = 250
         
         # Define target directories for data storage and logging, using safe defaults
-        self.base_dir = Path(os.getenv("BRONZE_DATA_DIR", "../data"))
-        self.log_dir = Path(os.getenv("LOG_DIR", "../logs/bronze_data"))
+        self.base_dir = Path(os.getenv("BRONZE_DATA_DIR", "data"))
+        self.log_dir = Path(os.getenv("LOG_DIR", "logs/bronze_data"))
 
 # ==========================================
 # API CLIENT (Extraction)

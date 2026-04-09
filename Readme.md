@@ -1,4 +1,4 @@
-# 🌊 CoinFlow: Cryptocurrency ELT Data Pipeline
+# 🌊 CoinFlow: Enterprise-Grade ELT Data Pipeline
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.0+-blue.svg)](https://www.postgresql.org/)
@@ -6,33 +6,34 @@
 [![Architecture](https://img.shields.io/badge/Architecture-Medallion-orange.svg)]()
 
 ## 📌 Project Overview
-CoinFlow is an automated ELT (Extract, Load, Transform) data pipeline designed to ingest real-time cryptocurrency market data from the CoinGecko API. 
+CoinFlow is a custom, containerized ELT (Extract, Load, Transform) framework designed to mirror production-level data lakehouse principles. Moving beyond basic API scripts, this project implements a resilient **Medallion Architecture** to ingest, normalize, and model real-time cryptocurrency market data from the CoinGecko API.
 
-This project leverages the **Medallion Architecture** (Bronze, Silver, Gold). It extracts raw JSON payloads locally, flattens them using Pandas, and loads them into a PostgreSQL staging table as raw text. From there, it relies entirely on native, highly optimized SQL queries to clean, cast data types, and aggregate the data into business-ready reporting metrics.
+The project is engineered with a focus on **Idempotency**, **Defensive Schema Design**, and **Environment Isolation**, providing a warehouse-agnostic blueprint for scalable data infrastructure.
 
-## 🏗️ Architecture & Data Flow
+## 🏗️ Architecture & Engineering Rigor
 
-CoinFlow strictly follows an ELT pattern, transitioning data systematically through landing zones and database schemas:
+CoinFlow leverages an ELT paradigm, utilizing PostgreSQL as a high-performance compute engine for transformation logic rather than relying on fragile in-memory processing.
 
-1. **Extraction (Local Landing):** The `bronze_pipeline.py` script manages API pagination and rate limiting, extracting raw data from the CoinGecko API and saving it securely as local `.json` files.
-2. **Bronze Layer (Raw Staging):** The `silver_pipeline.py` script picks up via a `load_json` function. It reads the local JSON files, uses `pandas` to flatten and normalize the nested structures, and loads the data into the `bronze.markets` PostgreSQL table. At this stage, to prevent schema-on-write errors, **all fields are strictly loaded as `text` datatypes**.
-3. **Silver Layer (Cleansed & Conformed):** The `silver_transformation.sql` script processes the `bronze.markets` text table. It safely casts the text fields into their proper native SQL types (e.g., `NUMERIC`, `TIMESTAMP WITH TIME ZONE`), handles missing values, filters out corrupt records, and inserts the clean data into the `silver.markets` table to act as the Single Source of Truth.
-4. **Gold Layer (Business Logic):** Finally, `gold_pipeline.py` executes SQL scripts from the `sql/gold` directory. This generates Materialized Views and dynamic Views that aggregate the Silver data into dashboards-ready metrics (e.g., daily historical performance, top market movers).
+1. **Extraction (Local Landing):** The `bronze_pipeline.py` script manages complex API pagination and rate-limiting. Extracted JSON payloads are persisted locally to ensure a "replayable" data source.
+2. **Bronze Layer (Raw Staging):** Data is ingested into the `bronze.markets` table. To prevent **Schema-on-Write** failures from upstream API changes, all fields are strictly loaded as `TEXT`.
+3. **Silver Layer (Normalization & Quality):** `silver_transformation.sql` performs the heavy lifting. Using SQL CTEs, it handles type-casting, null-value reconciliation, and deduplication. Strict SQL constraints and `ON CONFLICT` logic guarantee **Idempotency**—the pipeline can be executed infinitely without data duplication.
+4. **Gold Layer (Analytics & Modeling):** `gold_pipeline.py` automates DDL scripts to generate Materialized Views. This layer calculates business-ready narratives like FDV-to-Market Cap ratios and volatility spreads via advanced window functions.
 
-## 🚀 Key Features
-* **Medallion Architecture:** Clear separation of concerns between raw ingested text (Bronze), cleansed Single Source of Truth (Silver), and business-level aggregations (Gold).
-* **Hybrid Python/SQL ELT:** Utilizes `pandas` for handling messy, nested JSON structures in memory, and utilizes PostgreSQL's compute engine for heavy type-casting and aggregations.
-* **Idempotent Executions:** File archiving and `ON CONFLICT` database constraints ensure the pipeline can be run multiple times without duplicating data.
-* **Flexible Execution:** Can be run natively on a local machine via shell scripts or fully containerized via Docker.
+## 🚀 Key Engineering Features
+
+* **Custom Orchestration:** The entire lifecycle is managed by a single `entrypoint.sh` Bash orchestrator, handling task sequencing and dependency management.
+* **Unified Logging & Observability:** Integrated logging across Python and SQL layers provides a clear audit trail for every execution.
+* **Containerized Parity:** Full Dockerization ensures the pipeline runs identically on a local developer machine as it would on a cloud-based EC2 or Kubernetes instance.
+* **Defensive Design:** Implements robust handling for inconsistent data, missing fields, and API anomalies to ensure pipeline uptime.
 
 ## 🛠️ Tech Stack
-* **Orchestration:** Python, Docker, Bash
-* **Data Processing:** `pandas` (JSON flattening/normalization)
-* **Database & Transformation Engine:** PostgreSQL (utilizing CTEs, safe type casting, and Materialized Views)
-* **Libraries:** `pandas`, `psycopg2-binary`, `requests`, `python-dotenv`
-* **Data Source:** [CoinGecko API (Demo Tier)](https://docs.coingecko.com/)
+* **Orchestration:** Bash, Docker, Docker Compose
+* **Compute & Storage:** PostgreSQL 15+ (CTEs, Materialized Views, Schemas)
+* **Data Processing:** Python 3.10, Pandas (for JSON flattening)
+* **Data Source:** [CoinGecko API](https://www.coingecko.com/en/api)
 
 ## 📂 Repository Structure
+
 ```markdown
 Coinflow/
 ├── data/                               # Local storage for data processing

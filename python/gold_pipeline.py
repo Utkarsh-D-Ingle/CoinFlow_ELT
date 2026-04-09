@@ -32,8 +32,8 @@ class Config:
     DB_PASSWORD = os.getenv("DB_PASSWORD", "coinflow")
     
     # Path where the Gold layer SQL scripts (defining business logic and aggregates) are stored
-    GOLD_SQL_DIR = Path("../sql/gold")
-    LOG_DIR = Path("../logs/gold")
+    GOLD_SQL_DIR = Path("sql/gold")
+    LOG_DIR = Path("logs/gold")
 
 def setup_logging():
     """Configures centralized logging to both the console and a persistent log file."""

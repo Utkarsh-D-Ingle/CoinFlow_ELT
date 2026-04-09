@@ -34,10 +34,10 @@ class Config:
     DB_PASSWORD = os.getenv("DB_PASSWORD", "coinflow")
     
     # Paths (Using pathlib for robust, cross-platform path management)
-    DATA_DIR = Path("../data/markets")             # Source directory for incoming JSON files
-    ARCHIVE_DIR = Path("../data/archive")          # Destination for successfully processed files
-    SQL_FILE_PATH = Path("../sql/silver_transformation.sql") # SQL script for Silver layer logic
-    LOG_DIR = Path("../logs/silver_data")          # Directory for log files
+    DATA_DIR = Path("data/markets")             # Source directory for incoming JSON files
+    ARCHIVE_DIR = Path("data/archive")          # Destination for successfully processed files
+    SQL_FILE_PATH = Path("sql/silver_transformation.sql") # SQL script for Silver layer logic
+    LOG_DIR = Path("logs/silver_data")          # Directory for log files
 
 def setup_logging():
     """Configures logging to write to both the console and a persistent log file."""
