@@ -1,74 +1,128 @@
-# 🌊 CoinFlow: Enterprise-Grade ELT Data Pipeline
+# CoinFlow: End-to-End ELT Data Pipeline (Production-Inspired Design)
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.0+-blue.svg)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-Supported-blue.svg)](https://www.docker.com/)
 [![Architecture](https://img.shields.io/badge/Architecture-Medallion-orange.svg)]()
 
+## TL;DR
+
+CoinFlow is an end-to-end ELT pipeline that:
+- Extracts cryptocurrency market data from an API  
+- Cleans and transforms it using SQL  
+- Produces analytics-ready datasets for reporting  
+
+Built using **Python, PostgreSQL, and Docker**, it demonstrates how real-world data pipelines are structured using a **Medallion Architecture (Bronze → Silver → Gold)**.
+
+---
+
 ## 📌 Project Overview
-CoinFlow is a custom, containerized ELT (Extract, Load, Transform) framework designed to mirror production-level data lakehouse principles. Moving beyond basic API scripts, this project implements a resilient **Medallion Architecture** to ingest, normalize, and model real-time cryptocurrency market data from the CoinGecko API.
+CoinFlow is a **containerized ELT pipeline** designed to simulate production-style data systems.
 
-The project is engineered with a focus on **Idempotency**, **Defensive Schema Design**, and **Environment Isolation**, providing a warehouse-agnostic blueprint for scalable data infrastructure.
+Instead of focusing only on *what the data is*, this project focuses on:
+- Reliable data ingestion  
+- Scalable transformations  
+- Clean data modeling for analytics  
 
-## 🏗️ Architecture & Engineering Rigor
+The pipeline ingests real-time cryptocurrency data from the CoinGecko API and processes it into structured, analysis-ready datasets.
 
-CoinFlow leverages an ELT paradigm, utilizing PostgreSQL as a high-performance compute engine for transformation logic rather than relying on fragile in-memory processing.
+---
 
-1. **Extraction (Local Landing):** The `bronze_pipeline.py` script manages complex API pagination and rate-limiting. Extracted JSON payloads are persisted locally to ensure a "replayable" data source.
-2. **Bronze Layer (Raw Staging):** Data is ingested into the `bronze.markets` table. To prevent **Schema-on-Write** failures from upstream API changes, all fields are strictly loaded as `TEXT`.
-3. **Silver Layer (Normalization & Quality):** `silver_transformation.sql` performs the heavy lifting. Using SQL CTEs, it handles type-casting, null-value reconciliation, and deduplication. Strict SQL constraints and `ON CONFLICT` logic guarantee **Idempotency**—the pipeline can be executed infinitely without data duplication.
-4. **Gold Layer (Analytics & Modeling):** `gold_pipeline.py` automates DDL scripts to generate Materialized Views. This layer calculates business-ready narratives like FDV-to-Market Cap ratios and volatility spreads via advanced window functions.
+## 🧱 Architecture: Medallion Design
 
-## 🚀 Key Engineering Features
+The pipeline follows a **layered architecture** inside PostgreSQL:
 
-* **Custom Orchestration:** The entire lifecycle is managed by a single `entrypoint.sh` Bash orchestrator, handling task sequencing and dependency management.
-* **Unified Logging & Observability:** Integrated logging across Python and SQL layers provides a clear audit trail for every execution.
-* **Containerized Parity:** Full Dockerization ensures the pipeline runs identically on a local developer machine as it would on a cloud-based EC2 or Kubernetes instance.
-* **Defensive Design:** Implements robust handling for inconsistent data, missing fields, and API anomalies to ensure pipeline uptime.
+### 🥉 Bronze Layer (Raw Ingestion)
+- Python-based ingestion handling:
+  - API pagination  
+  - Rate limiting  
+- Stores raw data in PostgreSQL as `TEXT`  
+- Prevents failures due to schema changes  
+
+---
+
+### 🥈 Silver Layer (Data Cleaning & Normalization)
+- Implemented using **SQL (CTEs, constraints, ON CONFLICT)**  
+- Handles:
+  - Type casting  
+  - Missing values  
+  - Deduplication  
+
+✅ Ensures **idempotency** → safe to re-run without duplicate data  
+
+---
+
+### 🥇 Gold Layer (Analytics & Modeling)
+- Builds **materialized views** for analytics  
+- Uses **window functions and aggregations**
+
+Example outputs:
+- Market trends and rankings  
+- Top gainers/losers (24h)  
+- Token risk metrics (FDV vs Market Cap)  
+
+---
+
+## ⚙️ Engineering Highlights
+
+### 🔄 Orchestration
+- Single entry point using `entrypoint.sh`  
+- Handles task sequencing and dependencies  
+
+### 📦 Containerization
+- Fully containerized using **Docker & Docker Compose**  
+- Ensures consistent execution across environments  
+
+### 📊 Observability
+- Logging across Python and SQL layers  
+- Enables traceability for each pipeline run  
+
+### 🛡️ Data Reliability
+- Handles API inconsistencies and missing values  
+- Designed for robustness and repeatability  
+
+---
 
 ## 🛠️ Tech Stack
-* **Orchestration:** Bash, Docker, Docker Compose
-* **Compute & Storage:** PostgreSQL 15+ (CTEs, Materialized Views, Schemas)
-* **Data Processing:** Python 3.10, Pandas (for JSON flattening)
-* **Data Source:** [CoinGecko API](https://www.coingecko.com/en/api)
+
+**Languages & Processing**
+- Python  
+- SQL  
+
+**Database**
+- PostgreSQL (CTEs, Materialized Views, Schemas)
+
+**Infrastructure**
+- Docker  
+- Docker Compose  
+- Bash  
+
+**Data Source**
+- CoinGecko API  
+
+---
+
+## 📊 Example Analytics Use Cases
+
+After pipeline execution, the **Gold layer** can be used for:
+
+- 📈 Market trend analysis  
+- 🚀 Top performing tokens (24h)  
+- ⚠️ Risk indicators (FDV vs Market Cap)  
+- 📉 Volatility tracking  
+
+---
 
 ## 📂 Repository Structure
 
 ```markdown
 Coinflow/
-├── data/                               # Local storage for data processing
-│   ├── archive/                        # Backups of processed files (e.g., 21.json)
-│   └── markets/                        # Partitioned raw data landing zone
-│       └── date=2026-04-08/
-│           ├── 22.json                 # Unprocessed API JSON payload
-│           └── _SUCCESS_21             # Marker indicating successful processing
-│
-├── logs/                               # Execution logs organized by pipeline layer
-│   ├── bronze_data/
-│   │   └── bronze_pipeline.log
-│   ├── silver/
-│   │   └── silver_pipeline.log
-│   └── gold/
-│       └── gold_pipeline.log
-│
-├── python/                             # Python orchestration scripts
-│   ├── bronze_pipeline.py              # API extraction and local JSON saving
-│   ├── silver_pipeline.py              # Pandas normalization & triggering Silver SQL
-│   └── gold_pipeline.py                # Business logic DDL & MatView refreshes
-│
-├── sql/                                # Database queries and logic
-│   ├── silver_transformation.sql       # Casts Bronze text table into Silver typed table
-│   └── gold/                           # BI Views and Materialized Views
-│       ├── Current_State.sql
-│       ├── Daily_Market_Performance.sql
-│       ├── Market_Mover_24H.sql
-│       └── Tokenomics_Analysis.sql
-│
-├── .env                                # Local environment variables (ignored by git)
-├── docker-compose.yml                  # Docker services orchestration (App + DB)
-├── dockerfile                          # Python environment image builder
-├── entrypoint.sh                       # Startup and pipeline execution script
-└── requirements.txt                    # Python library dependencies
+├── python/                # Pipeline scripts
+├── sql/                   # SQL transformations & models
+├── docker-compose.yml     # Container orchestration
+├── dockerfile             # Python environment
+├── entrypoint.sh          # Pipeline runner
+└── requirements.txt       # Dependencies              # Python library dependencies
 ```
 
 ## ⚙️ Getting Started
@@ -78,7 +132,7 @@ Coinflow/
  * A free CoinGecko Demo API Key
 ### 1. Clone the Repository
 ```bash
-git clone [https://github.com/yourusername/CoinFlow.git](https://github.com/yourusername/CoinFlow.git)
+git clone https://github.com/Utkarsh-D-Ingle/CoinFlow.git
 cd CoinFlow
 
 ```
@@ -124,7 +178,7 @@ This option automatically spins up a PostgreSQL database, configures the schemas
    docker-compose up --build
 ```
 
-#### Option B: Direct Local Execution
+### Option B: Direct Local Execution
 If you already have a local PostgreSQL server running and prefer not to use Docker, you can run the pipeline directly on your machine.
  1. Update your .env file so that DB_HOST=localhost.
  2. Install the required Python dependencies:
@@ -142,14 +196,17 @@ If you already have a local PostgreSQL server running and prefer not to use Dock
    
 ```
 
-## 📊 Analytics & Downstream BI
-Once the entrypoint.sh script completes its run, the transformed data is ready for analysis.
-Connect your preferred business intelligence tool (such as **Power BI**, **Tableau**, or **Metabase**) directly to the PostgreSQL database exposed on port 5432.
-Query the gold schema directly to access pre-calculated, highly optimized reporting views:
- * **gold.current_market_snapshot**: Real-time pricing and deduplicated market rankings.
- * **gold.daily_market_performance**: Aggregated time-series facts for candlestick charts and moving averages.
- * **gold.market_movers_24h**: Filtered top gainers and losers backed by volume gates.
- * **gold.tokenomics_analysis**: Market Cap to Fully Diluted Valuation (FDV) ratios and all-time-high drops.
+## 📊 Using the Data
+After execution, connect any BI tool to PostgreSQL:
+    Power BI
+    Tableau
+    Metabase
+Query the Gold layer for ready-to-use datasets:
+**gold.current_market_snapshot**
+**gold.daily_market_performance**
+**gold.market_movers_24h**
+**gold.tokenomics_analysis**
+
 ## 🤝 Contributions
 Feel free to submit issues or pull requests. For major changes, please open an issue first to discuss the proposed updates.
 ## 📝 License
