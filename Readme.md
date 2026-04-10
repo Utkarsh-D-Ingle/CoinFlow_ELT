@@ -132,7 +132,7 @@ Coinflow/
  * A free CoinGecko Demo API Key
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/Utkarsh-D-Ingle/CoinFlow.git
+git clone https://github.com/Utkarsh-D-Ingle/CoinFlow_ELT.git
 cd CoinFlow
 
 ```
@@ -197,15 +197,21 @@ If you already have a local PostgreSQL server running and prefer not to use Dock
 ```
 
 ## 📊 Using the Data
+
 After execution, connect any BI tool to PostgreSQL:
-    Power BI
-    Tableau
-    Metabase
+
+- Power BI 
+    
+- Tableau
+
+- Metabase
+
 Query the Gold layer for ready-to-use datasets:
-**gold.current_market_snapshot**
-**gold.daily_market_performance**
-**gold.market_movers_24h**
-**gold.tokenomics_analysis**
+
+- **gold.current_market_snapshot**
+- **gold.daily_market_performance**
+– **gold.market_movers_24h**
+- **gold.tokenomics_analysis**
 
 ## 🤝 Contributions
 Feel free to submit issues or pull requests. For major changes, please open an issue first to discuss the proposed updates.
